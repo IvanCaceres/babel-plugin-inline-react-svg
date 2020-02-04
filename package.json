@@ -40,15 +40,17 @@
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
-    "react": "^15.3.1"
+    "react": "^16.8.0"
   },
   "peerDependencies": {
-    "@babel/core": "^7.0.0"
+    "@babel/core": "^7.0.0",
+    "react": "^16.8.0"
   },
   "dependencies": {
     "@babel/helper-plugin-utils": "^7.0.0",
     "@babel/parser": "^7.0.0",
     "lodash.isplainobject": "^4.0.6",
+    "prop-types": "^15.7.2",
     "resolve": "^1.10.0",
     "svgo": "^0.7.2"
   }
