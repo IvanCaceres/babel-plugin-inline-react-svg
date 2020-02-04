@@ -46,7 +46,11 @@ export default (t, state) => ({
         // to move the `ids[n]` expression there because it will break. Instead
         // of messing with that behavior, let's just don't try to fiddle with
         // `id` props on the root `<svg>`.
-        const isSvgId = Boolean(parent && parent.type === 'JSXOpeningElement' && parent.name.name.toLowerCase() === 'svg');
+        const isSvgId = Boolean(
+          parent
+          && parent.type === 'JSXOpeningElement'
+          && parent.name.name.toLowerCase() === 'svg',
+        );
         if (!isSvgId) {
           const idToRewrite = node.value.value;
           let index = state.ids.get(idToRewrite);
