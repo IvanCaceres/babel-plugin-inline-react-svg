@@ -41,6 +41,11 @@ export default (t, state) => ({
       }
 
       if (originalName.name === 'id') {
+        // This plugin detects when props (including `id`) are on the root
+        // `<svg>` element and moves them to `defaultProps`. We don't want it
+        // to move the `ids[n]` expression there because it will break. Instead
+        // of messing with that behavior, let's just don't try to fiddle with
+        // `id` props on the root `<svg>`.
         const isSvgId = Boolean(parent && parent.type === 'JSXOpeningElement' && parent.name.name.toLowerCase() === 'svg');
         if (!isSvgId) {
           const idToRewrite = node.value.value;
