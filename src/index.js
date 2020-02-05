@@ -27,7 +27,7 @@ export default declare(({
     SVG_DEFAULT_PROPS_CODE,
     NUM_IDS = 0,
   }) => {
-    const useIds = new Array(NUM_IDS).fill('useId()');
+    const useIds = new Array(NUM_IDS).fill('AutoId.useId()');
     const ID_HOOKS = `var ids = [${useIds.join(', ')}]`;
     const namedTemplate = `
       var SVG_NAME = function SVG_NAME(props) {
@@ -134,8 +134,8 @@ export default declare(({
         const svgReplacement = buildSvg(opts);
         path.replaceWith(svgReplacement);
       }
-      file.get('ensureUseId')();
-      file.set('ensureUseId', () => {});
+      file.get('ensureAutoId')();
+      file.set('ensureAutoId', () => {});
       file.get('ensureReact')();
       file.set('ensureReact', () => {});
     }
@@ -154,16 +154,16 @@ export default declare(({
           if (!path.scope.hasBinding('useId')) {
             const autoIdModule = opts.autoIdModule || 'babel-plugin-inline-react-svg/auto-id';
 
-            const useIdImportDeclaration = t.importDeclaration([
-              t.importSpecifier(t.identifier('useId'), t.identifier('useId')),
+            const autoIdImportDeclaration = t.importDeclaration([
+              t.importDefaultSpecifier(t.identifier('AutoId')),
             ], t.stringLiteral(autoIdModule));
 
-            file.set('ensureUseId', () => {
-              const [newPath] = path.unshiftContainer('body', useIdImportDeclaration);
+            file.set('ensureAutoId', () => {
+              const [newPath] = path.unshiftContainer('body', autoIdImportDeclaration);
               newPath.get('specifiers').forEach((specifier) => { path.scope.registerBinding('module', specifier); });
             });
           } else {
-            file.set('ensureUseId', () => {});
+            file.set('ensureAutoId', () => {});
           }
           if (!path.scope.hasBinding('React')) {
             const reactImportDeclaration = t.importDeclaration([
