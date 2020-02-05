@@ -107,15 +107,13 @@ export default declare(({
       file.get('ensureReact')();
       file.set('ensureReact', () => {});
 
-      const hookIdentifier = path.scope.getBinding('useId').identifier;
-
       const opts = {
         SVG_NAME: importIdentifier,
         SVG_CODE: svgCode,
         IS_EXPORT: isExport,
         EXPORT_FILENAME: exportFilename,
         NUM_IDS: ids.size,
-        HOOK_NAME: hookIdentifier,
+        HOOK_NAME: t.identifier('useId'),
       };
 
       // Move props off of element and into defaultProps
