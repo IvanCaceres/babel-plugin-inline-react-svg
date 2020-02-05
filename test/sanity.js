@@ -177,3 +177,14 @@ transformFile('test/fixtures/test-export-default-as.jsx', {
   if (err) throw err;
   console.log('test/fixtures/test-export-default-as.jsx', result.code);
 });
+
+transformFile('test/fixtures/test-ids.jsx', {
+  babelrc: false,
+  presets: [['@babel/preset-env', { modules: 'commonjs' }], '@babel/preset-react'],
+  plugins: [
+    inlineReactSvgPlugin,
+  ],
+}, (err, result) => {
+  if (err) throw err;
+  console.log('test/fixtures/test-ids.jsx', result.code);
+});

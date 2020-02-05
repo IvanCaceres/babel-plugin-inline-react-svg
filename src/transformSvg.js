@@ -63,7 +63,7 @@ export default (t, state) => ({
           );
         }
       } else {
-        const idRefMatch = /^url\(#([^)]+)\)$/.exec(node.value.value);
+        const idRefMatch = /^url\(['"]?#([^)]+)['"]?\)$/.exec(node.value.value);
         if (idRefMatch) {
           const idToRewrite = idRefMatch[1];
           let index = state.ids.get(idToRewrite);
