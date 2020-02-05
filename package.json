@@ -11,7 +11,7 @@
     "test": "npm run tests-only",
     "pretests-only": "npm run build",
     "tests-only": "babel-node test/sanity.js",
-    "build": "babel src --out-dir lib",
+    "build": "babel src --out-dir lib --verbose",
     "lint": "eslint src/",
     "prepare": "npm run build",
     "pretest": "npm run lint"
