@@ -2,14 +2,19 @@
   "name": "babel-plugin-inline-react-svg",
   "version": "1.1.1",
   "description": "A babel plugin that optimizes and inlines SVGs for your react components.",
+  "files": [
+    "lib",
+    "auto-id.js"
+  ],
   "main": "lib/index.js",
+  "sideEffects": false,
   "scripts": {
     "test": "npm run tests-only",
     "pretests-only": "npm run build",
     "tests-only": "babel-node test/sanity.js",
-    "build": "babel src --out-dir lib",
+    "build": "babel src --out-dir lib --verbose",
     "lint": "eslint src/",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "pretest": "npm run lint"
   },
   "repository": {
@@ -33,6 +38,7 @@
     "@babel/cli": "^7.4.3",
     "@babel/core": "^7.0.0",
     "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.0.0",
     "babel-preset-airbnb": "^3.2.1",
     "eslint": "^5.16.0",
@@ -40,15 +46,17 @@
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
-    "react": "^15.3.1"
+    "react": "^16.8.0"
   },
   "peerDependencies": {
-    "@babel/core": "^7.0.0"
+    "@babel/core": "^7.0.0",
+    "react": "^16.8.0"
   },
   "dependencies": {
     "@babel/helper-plugin-utils": "^7.0.0",
     "@babel/parser": "^7.0.0",
     "lodash.isplainobject": "^4.0.6",
+    "prop-types": "^15.7.2",
     "resolve": "^1.10.0",
     "svgo": "^0.7.2"
   }

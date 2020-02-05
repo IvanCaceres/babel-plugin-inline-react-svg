@@ -25,23 +25,40 @@ export default declare(({
     SVG_NAME,
     SVG_CODE,
     SVG_DEFAULT_PROPS_CODE,
+    NUM_IDS = 0,
+    HOOK_NAME,
   }) => {
+    const useIds = new Array(NUM_IDS).fill('HOOK_NAME()');
     const namedTemplate = `
-      var SVG_NAME = function SVG_NAME(props) { return SVG_CODE; };
+      var SVG_NAME = function SVG_NAME(props) {
+        ${NUM_IDS ? `var ids = [${useIds.join(', ')}];` : ''}
+        return SVG_CODE;
+      };
       ${SVG_DEFAULT_PROPS_CODE ? 'SVG_NAME.defaultProps = SVG_DEFAULT_PROPS_CODE;' : ''}
       ${IS_EXPORT ? 'export { SVG_NAME };' : ''}
     `;
     const anonymousTemplate = `
-      var Component = function (props) { return SVG_CODE; };
+      var Component = function (props) {
+        ${NUM_IDS ? `var ids = [${useIds.join(', ')}];` : ''}
+        return SVG_CODE;
+      };
       ${SVG_DEFAULT_PROPS_CODE ? 'Component.defaultProps = SVG_DEFAULT_PROPS_CODE;' : ''}
       Component.displayName = 'EXPORT_FILENAME';
       export default Component;
     `;
 
     if (SVG_NAME !== 'default') {
-      return template(namedTemplate)({ SVG_NAME, SVG_CODE, SVG_DEFAULT_PROPS_CODE });
+      return template(namedTemplate)(NUM_IDS ? {
+        SVG_NAME, SVG_CODE, SVG_DEFAULT_PROPS_CODE, HOOK_NAME,
+      } : {
+        SVG_NAME, SVG_CODE, SVG_DEFAULT_PROPS_CODE,
+      });
     }
-    return template(anonymousTemplate)({ SVG_CODE, SVG_DEFAULT_PROPS_CODE, EXPORT_FILENAME });
+    return template(anonymousTemplate)(NUM_IDS ? {
+      SVG_CODE, SVG_DEFAULT_PROPS_CODE, EXPORT_FILENAME, HOOK_NAME,
+    } : {
+      SVG_CODE, SVG_DEFAULT_PROPS_CODE, EXPORT_FILENAME,
+    });
   };
 
   function applyPlugin(importIdentifier, importPath, path, state, isExport, exportFilename) {
@@ -80,15 +97,25 @@ export default declare(({
         plugins: ['jsx'],
       });
 
-      traverse(parsedSvgAst, transformSvg(t));
+      const ids = new Map();
+      traverse(parsedSvgAst, transformSvg(t, { ids }));
 
       const svgCode = traverse.removeProperties(parsedSvgAst.program.body[0].expression);
+
+      file.get('ensureAutoId')();
+      file.set('ensureAutoId', () => {});
+      file.get('ensureReact')();
+      file.set('ensureReact', () => {});
+
+      const hookIdentifier = path.scope.getBinding('useId').identifier;
 
       const opts = {
         SVG_NAME: importIdentifier,
         SVG_CODE: svgCode,
         IS_EXPORT: isExport,
         EXPORT_FILENAME: exportFilename,
+        NUM_IDS: ids.size,
+        HOOK_NAME: hookIdentifier,
       };
 
       // Move props off of element and into defaultProps
@@ -115,8 +142,6 @@ export default declare(({
         const svgReplacement = buildSvg(opts);
         path.replaceWith(svgReplacement);
       }
-      file.get('ensureReact')();
-      file.set('ensureReact', () => {});
     }
   }
 
@@ -130,6 +155,22 @@ export default declare(({
           if (typeof filename === 'undefined' && typeof opts.filename !== 'string') {
             throw new TypeError('the "filename" option is required when transforming code');
           }
+
+          if (!path.scope.hasBinding('useId')) {
+            const autoIdModule = opts.autoIdModule || 'babel-plugin-inline-react-svg/auto-id';
+
+            const autoIdImportDeclaration = t.importDeclaration([
+              t.importSpecifier(t.identifier('useId'), t.identifier('useId')),
+            ], t.stringLiteral(autoIdModule));
+
+            file.set('ensureAutoId', () => {
+              const [newPath] = path.unshiftContainer('body', autoIdImportDeclaration);
+              newPath.get('specifiers').forEach((specifier) => { path.scope.registerBinding('module', specifier); });
+            });
+          } else {
+            file.set('ensureAutoId', () => {});
+          }
+
           if (!path.scope.hasBinding('React')) {
             const reactImportDeclaration = t.importDeclaration([
               t.importDefaultSpecifier(t.identifier('React')),

@@ -6,8 +6,8 @@
 import { namespaceToCamel, hyphenToCamel } from './camelize';
 import cssToObj from './cssToObj';
 
-export default t => ({
-  JSXAttribute({ node }) {
+export default (t, state) => ({
+  JSXAttribute({ node, parent }) {
     const { name: originalName } = node;
     if (t.isJSXNamespacedName(originalName)) {
       // converts
@@ -38,6 +38,47 @@ export default t => ({
           t.stringLiteral(csso[prop]),
         ));
         node.value = t.jSXExpressionContainer(t.objectExpression(properties));
+      }
+
+      if (originalName.name === 'id') {
+        // This plugin detects when props (including `id`) are on the root
+        // `<svg>` element and moves them to `defaultProps`. We don't want it
+        // to move the `ids[n]` expression there because it will break. Instead
+        // of messing with that behavior, let's just don't try to fiddle with
+        // `id` props on the root `<svg>`.
+        const isSvgId = Boolean(
+          parent
+          && parent.type === 'JSXOpeningElement'
+          && parent.name.name.toLowerCase() === 'svg',
+        );
+        if (!isSvgId) {
+          const idToRewrite = node.value.value;
+          let index = state.ids.get(idToRewrite);
+          if (index == null) {
+            index = state.ids.size;
+            state.ids.set(idToRewrite, index);
+          }
+          node.value = t.jSXExpressionContainer(
+            t.memberExpression(t.identifier('ids'), t.numericLiteral(index), true),
+          );
+        }
+      } else {
+        const idRefMatch = /^url\(['"]?#([^)]+)['"]?\)$/.exec(node.value.value);
+        if (idRefMatch) {
+          const idToRewrite = idRefMatch[1];
+          let index = state.ids.get(idToRewrite);
+          if (index == null) {
+            index = state.ids.size;
+            state.ids.set(idToRewrite, index);
+          }
+          node.value = t.jSXExpressionContainer(
+            t.binaryExpression('+',
+              t.binaryExpression('+',
+                t.stringLiteral('url(#'),
+                t.memberExpression(t.identifier('ids'), t.numericLiteral(index), true)),
+              t.stringLiteral(')')),
+          );
+        }
       }
 
       // converts
