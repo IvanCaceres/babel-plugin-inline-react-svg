@@ -152,9 +152,11 @@ export default declare(({
             throw new TypeError('the "filename" option is required when transforming code');
           }
           if (!path.scope.hasBinding('useId')) {
+            const autoIdModule = opts.autoIdModule || 'babel-plugin-inline-react-svg/auto-id';
+
             const useIdImportDeclaration = t.importDeclaration([
               t.importSpecifier(t.identifier('useId'), t.identifier('useId')),
-            ], t.stringLiteral('babel-plugin-inline-react-svg/auto-id'));
+            ], t.stringLiteral(autoIdModule));
 
             file.set('ensureUseId', () => {
               const [newPath] = path.unshiftContainer('body', useIdImportDeclaration);
